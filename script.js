@@ -2,8 +2,7 @@
 const broker = 'wss://broker.hivemq.com:8884/mqtt';
 const client = mqtt.connect(broker);
 
-// Your topic must match the ESP8266 publish topic
-// Example: "home/plug1/data"
+// Your topic must match the ESP32 publish topic
 const topics = ['smart/plug/data'];
 const plugs = {};
 
@@ -22,7 +21,7 @@ client.on('message', (topic, message) => {
     const text = message.toString();
     console.log(`📨 Message received on ${topic}:`, text);
 
-    // Expected format from ESP8266:
+    // Expected format:
     // plug:1 voltage:234V current:0.05A
     const regex = /plug:(\d+)\s+voltage:(\d+(?:\.\d+)?)V\s+current:(\d+(?:\.\d+)?)A/;
     const match = text.match(regex);
@@ -33,7 +32,7 @@ client.on('message', (topic, message) => {
       const current = parseFloat(match[3]);
       const power = voltage * current;
 
-      plugs[id] = { id, voltage, current, power };
+      plugs[id] = { id, voltage, current, power, plugNum: match[1] };
       updateUI();
     } else {
       console.warn('⚠️ Unrecognized message format:', text);
@@ -55,7 +54,7 @@ function updateUI() {
     total += p.power;
 
     const card = `
-      <div class="plug-card">
+      <div class="plug-card" onclick="location.href='plug.html?plug=${p.plugNum}'">
         <h2><i class="bi bi-plug-fill"></i> ${p.id}</h2>
         <div class="value"><i class="bi bi-lightning-charge"></i> Voltage: ${p.voltage.toFixed(2)} V</div>
         <div class="value"><i class="bi bi-current"></i> Current: ${p.current.toFixed(3)} A</div>
