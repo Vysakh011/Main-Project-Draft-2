@@ -25,6 +25,20 @@ header .subtitle {
   margin-top: 6px;
 }
 
+.total-power-box {
+  background-color: #0077cc;
+  color: white;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 600;
+  padding: 15px 20px;
+  border-radius: 12px;
+  margin: 20px auto;
+  width: fit-content;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+
 /* Plug Cards */
 .plug-container {
   display: flex;
@@ -154,3 +168,5 @@ input:checked + .slider:before {
 .action-btn:hover {
   background: #005fa3;
 }
+
+
