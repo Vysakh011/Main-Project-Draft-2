@@ -1,0 +1,87 @@
+/* General Layout */
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  background: #f0f4f8;
+  color: #222;
+}
+
+header {
+  text-align: center;
+  padding: 30px 15px 15px;
+  background: linear-gradient(135deg, #0077cc, #00b4d8);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+header h1 {
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+header .subtitle {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin-top: 6px;
+}
+
+/* Plug Cards */
+.plug-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  padding: 25px;
+}
+
+.plug-card {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  padding: 20px 25px;
+  width: 260px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-top: 5px solid #0077cc;
+}
+
+.plug-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+}
+
+.plug-card h2 {
+  color: #0077cc;
+  font-size: 1.2rem;
+  margin: 0 0 10px;
+}
+
+.value {
+  font-size: 0.95rem;
+  margin: 4px 0;
+}
+
+.value i {
+  color: #0077cc;
+  margin-right: 6px;
+}
+
+/* Total Power */
+footer {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.total-card {
+  display: inline-block;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #0077cc, #00b4d8);
+  color: white;
+  border-radius: 12px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.total-card i {
+  margin-right: 10px;
+}
