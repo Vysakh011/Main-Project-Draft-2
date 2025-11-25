@@ -85,3 +85,102 @@ footer {
 .total-card i {
   margin-right: 10px;
 }
+
+/* ========================= */
+/* NEW: Relay Toggle Switch  */
+/* ========================= */
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 70px;
+  height: 34px;
+  margin: 20px;
+}
+
+.switch input {
+  display: none;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  background-color: #ccc;
+  border-radius: 34px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  border-radius: 50%;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #0077cc;
+}
+
+input:checked + .slider:before {
+  transform: translateX(36px);
+}
+
+/* ========================= */
+/* NEW: Timer Picker         */
+/* ========================= */
+
+.timer-picker {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.timer-picker select {
+  padding: 10px;
+  font-size: 1.2rem;
+  border-radius: 10px;
+  border: 2px solid #0077cc;
+  background: white;
+  color: #0077cc;
+  font-weight: 600;
+  width: 80px;
+  text-align: center;
+  appearance: none;
+  overflow-y: scroll;
+}
+
+.timer-picker label {
+  font-size: 0.9rem;
+  color: #0077cc;
+  margin-top: 12px;
+}
+
+/* ========================= */
+/* NEW: Buttons              */
+/* ========================= */
+
+.action-btn {
+  padding: 12px 25px;
+  background: #0077cc;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: 0.2s;
+}
+
+.action-btn:hover {
+  background: #005fa3;
+}
