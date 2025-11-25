@@ -65,31 +65,7 @@ header .subtitle {
   margin-right: 6px;
 }
 
-/* Total Power */
-footer {
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-.total-card {
-  display: inline-block;
-  padding: 14px 28px;
-  background: linear-gradient(135deg, #0077cc, #00b4d8);
-  color: white;
-  border-radius: 12px;
-  font-size: 1.3rem;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.total-card i {
-  margin-right: 10px;
-}
-
-/* ========================= */
-/* NEW: Relay Toggle Switch  */
-/* ========================= */
-
+/* Relay Toggle Switch */
 .switch {
   position: relative;
   display: inline-block;
@@ -134,10 +110,7 @@ input:checked + .slider:before {
   transform: translateX(36px);
 }
 
-/* ========================= */
-/* NEW: Timer Picker         */
-/* ========================= */
-
+/* Timer Picker */
 .timer-picker {
   display: flex;
   justify-content: center;
@@ -165,10 +138,7 @@ input:checked + .slider:before {
   margin-top: 12px;
 }
 
-/* ========================= */
-/* NEW: Buttons              */
-/* ========================= */
-
+/* Buttons */
 .action-btn {
   padding: 12px 25px;
   background: #0077cc;
