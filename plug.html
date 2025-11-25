@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plug Control</title>
+
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header>
+    <h1>Plug Control Panel</h1>
+    <p class="subtitle">Live monitoring + control</p>
+  </header>
+
+  <main>
+    <section id="plugData" class="plug-container"></section>
+
+    <div style="text-align:center; margin-top:20px;">
+      <button onclick="sendCommand('on')">Turn ON</button>
+      <button onclick="sendCommand('off')">Turn OFF</button>
+
+      <br><br>
+
+      <input type="number" id="timerInput" placeholder="Timer (sec)">
+      <button onclick="sendTimer()">Start Timer</button>
+    </div>
+  </main>
+
+  <script src="plug.js"></script>
+</body>
+</html>
