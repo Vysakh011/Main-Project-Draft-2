@@ -5,12 +5,49 @@ const client = mqtt.connect(broker);
 const plugId = new URLSearchParams(location.search).get('plug');
 const topic = 'smart/plug/data';
 
-// Live data update
+// Relay toggle (must be top-level)
+function toggleRelay() {
+  const state = document.getElementById("relayToggle").checked;
+
+  const payload = JSON.stringify({
+    plug: parseInt(plugId),
+    cmd: state ? "on" : "off"
+  });
+
+  client.publish("smart/plug/cmd", payload);
+  console.log("Relay command:", payload);
+}
+
+// Timer sender (must be top-level)
+function sendTimer() {
+  const h = parseInt(document.getElementById('hours').value);
+  const m = parseInt(document.getElementById('minutes').value);
+  const s = parseInt(document.getElementById('seconds').value);
+
+  const totalSec = h * 3600 + m * 60 + s;
+
+  if (totalSec <= 0) {
+    console.log("Timer not set");
+    return;
+  }
+
+  const payload = JSON.stringify({
+    plug: parseInt(plugId),
+    cmd: "timer",
+    seconds: totalSec
+  });
+
+  client.publish("smart/plug/cmd", payload);
+  console.log("Timer command:", payload);
+}
+
+// MQTT connection
 client.on('connect', () => {
   console.log('✅ Connected to broker');
   client.subscribe(topic);
 });
 
+// MQTT message handler
 client.on('message', (t, message) => {
   const text = message.toString();
 
@@ -39,39 +76,3 @@ client.on('message', (t, message) => {
     document.getElementById("relayToggle").checked = relayState === 1;
   }
 });
-
-// Relay toggle
-function toggleRelay() {
-  const state = document.getElementById("relayToggle").checked;
-
-  const payload = JSON.stringify({
-    plug: parseInt(plugId),
-    cmd: state ? "on" : "off"
-  });
-
-  client.publish("smart/plug/cmd", payload);
-  console.log("Relay command:", payload);
-}
-
-// Timer sender
-function sendTimer() {
-  const h = parseInt(document.getElementById('hours').value);
-  const m = parseInt(document.getElementById('minutes').value);
-  const s = parseInt(document.getElementById('seconds').value);
-
-  const totalSec = h * 3600 + m * 60 + s;
-
-  if (totalSec <= 0) {
-    console.log("Timer not set");
-    return;
-  }
-
-  const payload = JSON.stringify({
-    plug: parseInt(plugId),
-    cmd: "timer",
-    seconds: totalSec
-  });
-
-  client.publish("smart/plug/cmd", payload);
-  console.log("Timer command:", payload);
-}
