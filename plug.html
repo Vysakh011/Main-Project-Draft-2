@@ -5,27 +5,76 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Plug Control</title>
 
+  <!-- MQTT -->
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+  <!-- Icons + Fonts -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Main CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
   <header>
-    <h1>Plug Control Panel</h1>
-    <p class="subtitle">Live monitoring + control</p>
+    <h1><i class="bi bi-plug-fill"></i> Plug Control Panel</h1>
+    <p class="subtitle">Live monitoring & control</p>
   </header>
 
   <main>
+    <!-- Live Data Card -->
     <section id="plugData" class="plug-container"></section>
 
     <div style="text-align:center; margin-top:20px;">
-      <button onclick="sendCommand('on')">Turn ON</button>
-      <button onclick="sendCommand('off')">Turn OFF</button>
 
-      <br><br>
+      <!-- Relay Toggle -->
+      <h3>Relay Control</h3>
+      <label class="switch">
+        <input type="checkbox" id="relayToggle" onchange="toggleRelay()">
+        <span class="slider"></span>
+      </label>
 
-      <input type="number" id="timerInput" placeholder="Timer (sec)">
-      <button onclick="sendTimer()">Start Timer</button>
+      <!-- Timer Picker -->
+      <h3>Set Timer</h3>
+      <div class="timer-picker">
+
+        <div>
+          <select id="hours">
+            <script>
+              for (let i = 0; i < 24; i++) {
+                document.write(`<option>${String(i).padStart(2, '0')}</option>`);
+              }
+            </script>
+          </select>
+          <label>Hours</label>
+        </div>
+
+        <div>
+          <select id="minutes">
+            <script>
+              for (let i = 0; i < 60; i++) {
+                document.write(`<option>${String(i).padStart(2, '0')}</option>`);
+              }
+            </script>
+          </select>
+          <label>Minutes</label>
+        </div>
+
+        <div>
+          <select id="seconds">
+            <script>
+              for (let i = 0; i < 60; i++) {
+                document.write(`<option>${String(i).padStart(2, '0')}</option>`);
+              }
+            </script>
+          </select>
+          <label>Seconds</label>
+        </div>
+
+      </div>
+
+      <button class="action-btn" onclick="sendTimer()">Start Timer</button>
     </div>
   </main>
 
