@@ -37,10 +37,21 @@ function sendCommand(cmd) {
 }
 
 function sendTimer() {
-  const sec = parseInt(document.getElementById('timerInput').value);
-  if (!isNaN(sec) && sec > 0) {
-    const payload = JSON.stringify({ plug: parseInt(plugId), cmd: 'timer', seconds: sec });
-    client.publish('smart/plug/cmd', payload);
-    console.log("Sent:", payload);
-  }
+  const h = parseInt(document.getElementById('hours').value);
+  const m = parseInt(document.getElementById('minutes').value);
+  const s = parseInt(document.getElementById('seconds').value);
+
+  const totalSec = h * 3600 + m * 60 + s;
+
+  if (totalSec <= 0) return;
+
+  const payload = JSON.stringify({
+    plug: parseInt(plugId),
+    cmd: "timer",
+    seconds: totalSec
+  });
+
+  client.publish("smart/plug/cmd", payload);
+  console.log("Sent:", payload);
 }
+
