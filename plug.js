@@ -83,7 +83,7 @@ function sendTimer() {
 
   if (totalSec <= 0) return;
 
-  // ✅ Timer always forces relay ON (UI OFF)
+  // ✅ Timer command (relay ON)
   const payload = JSON.stringify({
     plug: currentPlugId,
     cmd: "timer",
@@ -93,6 +93,7 @@ function sendTimer() {
   client.publish("smart/plug/cmd", payload);
   console.log("Sent:", payload);
 
-  // ✅ Force UI switch ON (relay OFF) while timer runs
+  // ✅ NEW: When timer starts, web switch must turn ON
   document.getElementById("relayToggle").checked = true;
 }
+
