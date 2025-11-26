@@ -36,6 +36,12 @@ function updatePlugUI(plugId, plugData) {
     card = document.createElement("div");
     card.className = "plug-card";
     card.id = `plug-${plugId}`;
+
+    // ✅ Make the entire card clickable
+    card.addEventListener("click", () => {
+      window.location.href = `plug.html?plug=${plugId}`;
+    });
+
     container.appendChild(card);
   }
 
