@@ -4,41 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Plug Control</title>
-
   <!-- MQTT -->
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-
   <!-- Icons + Fonts -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-
   <!-- Main CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
   <header>
     <h1><i class="bi bi-plug-fill"></i> Plug Control Panel</h1>
     <p class="subtitle">Live monitoring & control</p>
   </header>
-
   <main>
     <!-- Live Data Card -->
     <section id="plugData" class="plug-container"></section>
-
     <div style="text-align:center; margin-top:20px;">
-
       <!-- Relay Toggle -->
       <h3>Relay Control</h3>
       <label class="switch">
         <input type="checkbox" id="relayToggle" onchange="toggleRelay()">
         <span class="slider"></span>
       </label>
-
+      <p id="relayStatus" style="margin-top:10px; font-weight:600;">Status: OFF</p>
+      
       <!-- Timer Picker -->
-      <h3>Set Timer</h3>
+      <h3 style="margin-top:30px;">Set Timer</h3>
       <div class="timer-picker">
-
         <div>
           <select id="hours">
             <script>
@@ -49,7 +42,6 @@
           </select>
           <label>Hours</label>
         </div>
-
         <div>
           <select id="minutes">
             <script>
@@ -60,7 +52,6 @@
           </select>
           <label>Minutes</label>
         </div>
-
         <div>
           <select id="seconds">
             <script>
@@ -71,13 +62,11 @@
           </select>
           <label>Seconds</label>
         </div>
-
       </div>
-
       <button class="action-btn" onclick="sendTimer()">Start Timer</button>
+      <p id="timerDisplay" style="margin-top:15px; font-size:18px; color:#f39c12;"></p>
     </div>
   </main>
-
   <script src="plug.js"></script>
 </body>
 </html>
