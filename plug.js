@@ -1,19 +1,17 @@
 // ================= MQTT CONNECTION =================
 const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
 
-let currentPlugId = 1; // default plug
+let currentPlugId = 1;
 
+// ================= HANDLE INCOMING DATA =================
 client.on("connect", () => {
   console.log("✅ MQTT Connected");
   client.subscribe("smart/plug/data");
 });
 
-// ================= HANDLE INCOMING DATA =================
 client.on("message", (topic, message) => {
   const msg = message.toString();
 
-  // Expected format:
-  // plug:1 voltage:230.1V current:0.123A relay:1 timer:20
   const parts = msg.split(" ");
 
   const plugId = parseInt(parts[0].split(":")[1]);
@@ -45,16 +43,14 @@ function updateUI(voltage, current, relayState, timerSec) {
 
   const webSwitch = document.getElementById("relayToggle");
 
-  // ✅ INVERSION LOGIC (always active)
+  // ✅ RULE 1: INVERSION ALWAYS
   // relay OFF → switch ON
   // relay ON  → switch OFF
-  const invertedState = relayState === 0;
-  webSwitch.checked = invertedState;
+  webSwitch.checked = (relayState === 0);
 
-  // ✅ TIMER END LOGIC
-  // When timer hits 0 AND relay is OFF → switch must be ON
+  // ✅ RULE 3: TIMER END
   if (timerSec === 0 && relayState === 0) {
-    webSwitch.checked = true;
+    webSwitch.checked = true; // ON
   }
 }
 
@@ -82,7 +78,6 @@ function sendTimer() {
   const s = parseInt(document.getElementById("seconds").value);
 
   const totalSec = h * 3600 + m * 60 + s;
-
   if (totalSec <= 0) return;
 
   const payload = JSON.stringify({
@@ -96,7 +91,7 @@ function sendTimer() {
 
   const webSwitch = document.getElementById("relayToggle");
 
-  // ✅ TIMER START LOGIC
+  // ✅ RULE 2: TIMER START
   // If switch is OFF → turn ON
   if (!webSwitch.checked) {
     webSwitch.checked = true;
