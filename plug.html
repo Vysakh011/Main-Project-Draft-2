@@ -9,8 +9,182 @@
   <!-- Icons + Fonts -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <!-- Main CSS -->
-  <link rel="stylesheet" href="style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
+    }
+
+    header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .plug-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .plug-card {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .plug-card h2 {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      color: #667eea;
+      text-align: center;
+    }
+
+    .value {
+      font-size: 1.2rem;
+      margin: 10px 0;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .value i {
+      margin-right: 10px;
+      color: #667eea;
+    }
+
+    .timer-active {
+      background: #fff3cd !important;
+      border-left: 4px solid #f39c12;
+      font-weight: 600;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 80px;
+      height: 40px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.4s;
+      border-radius: 40px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 32px;
+      width: 32px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #28a745;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(40px);
+    }
+
+    .timer-picker {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .timer-picker div {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .timer-picker select {
+      width: 70px;
+      padding: 10px;
+      font-size: 1.2rem;
+      border: 2px solid #667eea;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .timer-picker label {
+      margin-top: 8px;
+      font-size: 0.9rem;
+      color: white;
+      font-weight: 600;
+    }
+
+    .action-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
+    }
+
+    h3 {
+      color: white;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -20,6 +194,7 @@
   <main>
     <!-- Live Data Card -->
     <section id="plugData" class="plug-container"></section>
+    
     <div style="text-align:center; margin-top:20px;">
       <!-- Relay Toggle -->
       <h3>Relay Control</h3>
@@ -27,7 +202,7 @@
         <input type="checkbox" id="relayToggle" onchange="toggleRelay()">
         <span class="slider"></span>
       </label>
-      <p id="relayStatus" style="margin-top:10px; font-weight:600;">Status: OFF</p>
+      <p id="relayStatus" style="margin-top:10px; font-weight:600; color: white;">Status: OFF</p>
       
       <!-- Timer Picker -->
       <h3 style="margin-top:30px;">Set Timer</h3>
@@ -64,7 +239,7 @@
         </div>
       </div>
       <button class="action-btn" onclick="sendTimer()">Start Timer</button>
-      <p id="timerDisplay" style="margin-top:15px; font-size:18px; color:#f39c12;"></p>
+      <p id="timerDisplay" style="margin-top:15px; font-size:18px; color:#f39c12; font-weight: 600;"></p>
     </div>
   </main>
   <script src="plug.js"></script>
