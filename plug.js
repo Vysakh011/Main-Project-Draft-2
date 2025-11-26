@@ -1,69 +1,67 @@
-// ================= MQTT CONNECTION =================
+// plug.js
 const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
-let currentPlugId = 1;
 
 client.on("connect", () => {
-  console.log("✅ MQTT Connected");
+  console.log("MQTT connected");
   client.subscribe("smart/plug/data");
 });
 
-// ================= HANDLE INCOMING DATA =================
 client.on("message", (topic, message) => {
   const msg = message.toString();
+  console.log("MQTT DATA:", msg);
+
+  // Example payload: plug:1 voltage:230.0V current:0.123A relay:1 timer:25
   const parts = msg.split(" ");
   const plugId = parseInt(parts[0].split(":")[1]);
-  if (plugId !== currentPlugId) return;
-
   const voltage = parseFloat(parts[1].split(":")[1]);
   const current = parseFloat(parts[2].split(":")[1]);
-  const relay = parseInt(parts[3].split(":")[1]);   // 0 or 1
+  const relay = parseInt(parts[3].split(":")[1]);
   const timer = parseInt(parts[4].split(":")[1]);
 
-  updateUI(voltage, current, relay, timer);
-});
-
-// ================= UPDATE UI =================
-function updateUI(voltage, current, relayState, timerSec) {
+  // Update live card
   const container = document.getElementById("plugData");
-  const power = (voltage * current).toFixed(1);
-
   container.innerHTML = `
     <div class="plug-card">
-      <h2>Plug ${currentPlugId}</h2>
-      <p class="value"><i class="bi bi-lightning"></i> Voltage: ${voltage.toFixed(1)} V</p>
-      <p class="value"><i class="bi bi-activity"></i> Current: ${current.toFixed(3)} A</p>
-      <p class="value"><i class="bi bi-plug"></i> Power: ${power} W</p>
-      <p class="value"><i class="bi bi-hourglass-split"></i> Timer: ${timerSec} s</p>
+      <h2>Plug ${plugId}</h2>
+      <p class="value"><i class="bi bi-battery"></i> Voltage: ${voltage.toFixed(1)} V</p>
+      <p class="value"><i class="bi bi-lightning"></i> Current: ${current.toFixed(3)} A</p>
+      <p class="value"><i class="bi bi-power"></i> Relay: ${relay === 1 ? "ON" : "OFF"}</p>
+      <p class="value"><i class="bi bi-clock"></i> Timer: ${timer} sec</p>
     </div>
   `;
 
-  const webSwitch = document.getElementById("relayToggle");
-  const relayStatus = document.getElementById("relayStatus");
-
-  // ✅ INVERSION LOGIC
-  webSwitch.checked = (relayState === 0);
-
-  // ✅ TIMER END LOGIC
-  if (timerSec === 0 && relayState === 1) {
-    webSwitch.checked = false;
+  // ✅ Sync toggle with relay state
+  const toggle = document.getElementById("relayToggle");
+  const status = document.getElementById("relayStatus");
+  if (relay === 1) {
+    toggle.checked = true;
+    status.textContent = "Status: ON";
+  } else {
+    toggle.checked = false;
+    status.textContent = "Status: OFF";
   }
 
-  // ✅ Update status text
-  relayStatus.textContent = "Status: " + (webSwitch.checked ? "ON" : "OFF");
-}
+  // ✅ Show timer countdown if active
+  const timerDisplay = document.getElementById("timerDisplay");
+  if (timer > 0) {
+    timerDisplay.textContent = `Timer Running: ${timer} sec left`;
+  } else {
+    timerDisplay.textContent = "";
+  }
+});
 
-// ================= SEND COMMANDS =================
+// ================= CONTROL FUNCTIONS =================
 function toggleRelay() {
-  const isChecked = document.getElementById("relayToggle").checked;
-  const cmd = isChecked ? "off" : "on"; // inversion
-  const payload = JSON.stringify({
-    plug: currentPlugId,
-    cmd: cmd
-  });
-  client.publish("smart/plug/cmd", payload);
-  console.log("Sent:", payload);
+  const toggle = document.getElementById("relayToggle");
+  const status = document.getElementById("relayStatus");
 
-  document.getElementById("relayStatus").textContent = "Status: " + (isChecked ? "ON" : "OFF");
+  if (toggle.checked) {
+    client.publish("smart/plug/cmd", JSON.stringify({ plug: 1, cmd: "on" }));
+    status.textContent = "Status: ON";
+  } else {
+    client.publish("smart/plug/cmd", JSON.stringify({ plug: 1, cmd: "off" }));
+    status.textContent = "Status: OFF";
+  }
 }
 
 function sendTimer() {
@@ -71,24 +69,13 @@ function sendTimer() {
   const m = parseInt(document.getElementById("minutes").value);
   const s = parseInt(document.getElementById("seconds").value);
   const totalSec = h * 3600 + m * 60 + s;
-  if (totalSec <= 0) return;
 
-  const payload = JSON.stringify({
-    plug: currentPlugId,
-    cmd: "timer",
-    seconds: totalSec
-  });
-  client.publish("smart/plug/cmd", payload);
-  console.log("Sent:", payload);
-
-  const webSwitch = document.getElementById("relayToggle");
-  // ✅ TIMER START LOGIC
-  // Only force ON if it was OFF
-  if (!webSwitch.checked) {
-    webSwitch.checked = true;
+  if (totalSec > 0) {
+    client.publish("smart/plug/cmd", JSON.stringify({ plug: 1, cmd: "timer", seconds: totalSec }));
+    document.getElementById("timerDisplay").textContent = `Timer Started: ${totalSec} sec`;
+    // ✅ Force toggle ON when timer starts
+    const toggle = document.getElementById("relayToggle");
+    toggle.checked = true;
     document.getElementById("relayStatus").textContent = "Status: ON";
   }
-
-  // Show timer countdown in UI
-  document.getElementById("timerDisplay").textContent = `Timer started: ${totalSec} seconds`;
 }
