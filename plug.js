@@ -43,16 +43,11 @@ function updateUI(voltage, current, relayState, timerSec) {
     </div>
   `;
 
-  // ✅ UI INVERSION LOGIC
-  // relayState = 1 → relay ON → web switch must be OFF
-  // relayState = 0 → relay OFF → web switch must be ON
-  const webSwitchState = relayState === 0;
+  const webSwitch = document.getElementById("relayToggle");
 
-  document.getElementById("relayToggle").checked = webSwitchState;
-
-  // ✅ When timer finishes (timerSec = 0), force switch OFF
-  if (timerSec === 0 && relayState === 1) {
-    document.getElementById("relayToggle").checked = false;
+  // ✅ ONLY turn switch OFF when timer ends AND relay is OFF
+  if (timerSec === 0 && relayState === 0) {
+    webSwitch.checked = false;
   }
 }
 
@@ -60,10 +55,9 @@ function updateUI(voltage, current, relayState, timerSec) {
 function toggleRelay() {
   const isChecked = document.getElementById("relayToggle").checked;
 
-  // ✅ UI inversion:
-  // Web ON  → relay OFF  → cmd = 0
-  // Web OFF → relay ON   → cmd = 1
-  const cmd = isChecked ? "off" : "on";
+  // ✅ Web ON → relay ON
+  // ✅ Web OFF → relay OFF
+  const cmd = isChecked ? "on" : "off";
 
   const payload = JSON.stringify({
     plug: currentPlugId,
@@ -83,7 +77,6 @@ function sendTimer() {
 
   if (totalSec <= 0) return;
 
-  // ✅ Timer command (relay ON)
   const payload = JSON.stringify({
     plug: currentPlugId,
     cmd: "timer",
@@ -93,7 +86,12 @@ function sendTimer() {
   client.publish("smart/plug/cmd", payload);
   console.log("Sent:", payload);
 
-  // ✅ NEW: When timer starts, web switch must turn ON
-  document.getElementById("relayToggle").checked = false;
-}
+  const webSwitch = document.getElementById("relayToggle");
 
+  // ✅ If switch is OFF → turn ON when timer starts
+  if (!webSwitch.checked) {
+    webSwitch.checked = true;
+  }
+
+  // ✅ If switch is already ON → leave it ON
+}
