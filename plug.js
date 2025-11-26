@@ -1,13 +1,10 @@
 // ================= MQTT CONNECTION =================
 const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
 let currentPlugId = 1;
-let webSwitchWasOnAtTimerStart = false;   // ✅ Track state at timer start
-
 client.on("connect", () => {
   console.log("✅ MQTT Connected");
   client.subscribe("smart/plug/data");
 });
-
 // ================= HANDLE INCOMING DATA =================
 client.on("message", (topic, message) => {
   const msg = message.toString();
@@ -20,7 +17,6 @@ client.on("message", (topic, message) => {
   const timer = parseInt(parts[4].split(":")[1]);
   updateUI(voltage, current, relay, timer);
 });
-
 // ================= UPDATE UI =================
 function updateUI(voltage, current, relayState, timerSec) {
   const container = document.getElementById("plugData");
@@ -34,23 +30,17 @@ function updateUI(voltage, current, relayState, timerSec) {
       <p class="value"><i class="bi bi-hourglass-split"></i> Timer: ${timerSec} s</p>
     </div>
   `;
-
   const webSwitch = document.getElementById("relayToggle");
-
   // ✅ INVERSION LOGIC (ALWAYS)
   // relay OFF → switch ON
   // relay ON  → switch OFF
   webSwitch.checked = (relayState === 0);
-
   // ✅ TIMER END LOGIC
-  if (timerSec === 0) {
+  // When timer ends (0) AND relay is ON → switch OFF
+  if (timerSec === 0 && relayState === 1) {
     webSwitch.checked = false;
   }
-
-  // ✅ Update status text
-  document.getElementById("relayStatus").innerText = "Status: " + (webSwitch.checked ? "ON" : "OFF");
 }
-
 // ================= SEND COMMANDS =================
 function toggleRelay() {
   const isChecked = document.getElementById("relayToggle").checked;
@@ -64,27 +54,13 @@ function toggleRelay() {
   });
   client.publish("smart/plug/cmd", payload);
   console.log("Sent:", payload);
-
-  // ✅ Update status text
-  document.getElementById("relayStatus").innerText = "Status: " + (isChecked ? "ON" : "OFF");
 }
-
 function sendTimer() {
   const h = parseInt(document.getElementById("hours").value);
   const m = parseInt(document.getElementById("minutes").value);
   const s = parseInt(document.getElementById("seconds").value);
   const totalSec = h * 3600 + m * 60 + s;
   if (totalSec <= 0) return;
-
-  const webSwitch = document.getElementById("relayToggle");
-
-  // ✅ Save current state before timer starts
-  webSwitchWasOnAtTimerStart = webSwitch.checked;
-
-  // ✅ CASE 1: Web switch ON → keep ON
-  // ✅ CASE 2: Web switch OFF → turn ON for timer
-  webSwitch.checked = true;
-
   const payload = JSON.stringify({
     plug: currentPlugId,
     cmd: "timer",
@@ -92,7 +68,8 @@ function sendTimer() {
   });
   client.publish("smart/plug/cmd", payload);
   console.log("Sent:", payload);
-
-  // ✅ Update status text
-  document.getElementById("relayStatus").innerText = "Status: ON";
+  const webSwitch = document.getElementById("relayToggle");
+  // ✅ TIMER START LOGIC
+  // Timer start → switch ON → relay OFF
+  webSwitch.checked = true;
 }
