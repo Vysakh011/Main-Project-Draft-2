@@ -1,8 +1,8 @@
-// MQTT client setup (example, adjust broker URL as needed)
-const client = mqtt.connect("ws://broker.hivemq.com:8884/mqtt");
+// ✅ Use secure WebSocket (WSS) since site is HTTPS
+const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
 
 client.on("connect", () => {
-  console.log("✅ Connected to MQTT broker");
+  console.log("✅ Connected to MQTT broker over WSS");
   client.subscribe("smart/plug/data");
 });
 
@@ -47,7 +47,7 @@ function updatePlugUI(plugId, plugData) {
     <p class="value"><i class="bi bi-clock"></i> Timer: ${plugData.timer} s</p>
   `;
 
-  // Update total power if you calculate it
+  // Update total power
   const totalCard = document.getElementById("total");
   const power = (plugData.voltage * plugData.current).toFixed(2);
   totalCard.innerHTML = `<i class="bi bi-graph-up-arrow"></i> Total Power: ${power} W`;
