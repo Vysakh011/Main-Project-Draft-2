@@ -1,70 +1,54 @@
-// MQTT setup for browser (HiveMQ Public Broker)
-const broker = 'wss://broker.hivemq.com:8884/mqtt';
-const client = mqtt.connect(broker);
+// MQTT client setup (example, adjust broker URL as needed)
+const client = mqtt.connect("ws://broker.hivemq.com:8000/mqtt");
 
-// Your topic must match the ESP32 publish topic
-const topics = ['smart/plug/data'];
-const plugs = {};
-
-client.on('connect', () => {
-  console.log('✅ Connected to HiveMQ broker');
-  topics.forEach(t => {
-    client.subscribe(t, (err) => {
-      if (!err) console.log(`📡 Subscribed to topic: ${t}`);
-      else console.error('❌ Subscription error:', err);
-    });
-  });
+client.on("connect", () => {
+  console.log("✅ Connected to MQTT broker");
+  client.subscribe("smart/plug/data");
 });
 
-client.on('message', (topic, message) => {
+client.on("message", (topic, message) => {
   try {
-    const text = message.toString();
-    console.log(`📨 Message received on ${topic}:`, text);
+    const data = JSON.parse(message.toString());
 
-    // Expected format:
-    // plug:1 voltage:234V current:0.05A
-    const regex = /plug:(\d+)\s+voltage:(\d+(?:\.\d+)?)V\s+current:(\d+(?:\.\d+)?)A/;
-    const match = text.match(regex);
+    // Accept both formats: nested {data:{...}} or flat {...}
+    const plugData = data.data || data;
 
-    if (match) {
-      const id = `Plug-${match[1]}`;
-      const voltage = parseFloat(match[2]);
-      const current = parseFloat(match[3]);
-      const power = voltage * current;
-
-      plugs[id] = { id, voltage, current, power, plugNum: match[1] };
-      updateUI();
+    if (
+      plugData.voltage !== undefined &&
+      plugData.current !== undefined &&
+      plugData.relay !== undefined
+    ) {
+      updatePlugUI(data.plug, plugData);
     } else {
-      console.warn('⚠️ Unrecognized message format:', text);
+      console.warn("⚠️ Unrecognized message format:", message.toString());
     }
   } catch (err) {
-    console.error('⚠️ Parse or process error:', err);
-    console.error('Raw message:', message.toString());
+    console.error("❌ Error parsing message:", err);
   }
 });
 
-function updateUI() {
-  const container = document.getElementById('plugs');
-  container.innerHTML = '';
+// Example UI update function
+function updatePlugUI(plugId, plugData) {
+  const container = document.getElementById("plugs");
+  let card = document.getElementById(`plug-${plugId}`);
 
-  let total = 0;
-
-  for (const id in plugs) {
-    const p = plugs[id];
-    total += p.power;
-
-    const card = `
-      <div class="plug-card" onclick="location.href='plug.html?plug=${p.plugNum}'">
-        <h2><i class="bi bi-plug-fill"></i> ${p.id}</h2>
-        <div class="value"><i class="bi bi-lightning-charge"></i> Voltage: ${p.voltage.toFixed(2)} V</div>
-        <div class="value"><i class="bi bi-current"></i> Current: ${p.current.toFixed(3)} A</div>
-        <div class="value"><i class="bi bi-bar-chart-line"></i> <b>Power: ${p.power.toFixed(2)} W</b></div>
-      </div>
-    `;
-
-    container.innerHTML += card;
+  if (!card) {
+    card = document.createElement("div");
+    card.className = "plug-card";
+    card.id = `plug-${plugId}`;
+    container.appendChild(card);
   }
 
-  document.getElementById('total').innerHTML =
-    `<i class="bi bi-graph-up-arrow"></i> Total Power: ${total.toFixed(2)} W`;
+  card.innerHTML = `
+    <h2>Plug ${plugId}</h2>
+    <p class="value"><i class="bi bi-battery"></i> Voltage: ${plugData.voltage} V</p>
+    <p class="value"><i class="bi bi-lightning"></i> Current: ${plugData.current} A</p>
+    <p class="value"><i class="bi bi-toggle-on"></i> Relay: ${plugData.relay ? "ON" : "OFF"}</p>
+    <p class="value"><i class="bi bi-clock"></i> Timer: ${plugData.timer} s</p>
+  `;
+
+  // Update total power if you calculate it
+  const totalCard = document.getElementById("total");
+  const power = (plugData.voltage * plugData.current).toFixed(2);
+  totalCard.innerHTML = `<i class="bi bi-graph-up-arrow"></i> Total Power: ${power} W`;
 }
