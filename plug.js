@@ -3,12 +3,12 @@ const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
 
 let currentPlugId = 1;
 
-// ================= HANDLE INCOMING DATA =================
 client.on("connect", () => {
   console.log("✅ MQTT Connected");
   client.subscribe("smart/plug/data");
 });
 
+// ================= HANDLE INCOMING DATA =================
 client.on("message", (topic, message) => {
   const msg = message.toString();
 
@@ -43,14 +43,15 @@ function updateUI(voltage, current, relayState, timerSec) {
 
   const webSwitch = document.getElementById("relayToggle");
 
-  // ✅ RULE 1: INVERSION ALWAYS
+  // ✅ INVERSION LOGIC (ALWAYS)
   // relay OFF → switch ON
   // relay ON  → switch OFF
   webSwitch.checked = (relayState === 0);
 
-  // ✅ RULE 3: TIMER END
-  if (timerSec === 0 && relayState === 0) {
-    webSwitch.checked = true; // ON
+  // ✅ TIMER END LOGIC
+  // When timer ends (0) AND relay is ON → switch OFF
+  if (timerSec === 0 && relayState === 1) {
+    webSwitch.checked = false;
   }
 }
 
@@ -58,7 +59,7 @@ function updateUI(voltage, current, relayState, timerSec) {
 function toggleRelay() {
   const isChecked = document.getElementById("relayToggle").checked;
 
-  // ✅ UI inversion:
+  // ✅ INVERSION:
   // Web ON  → relay OFF
   // Web OFF → relay ON
   const cmd = isChecked ? "off" : "on";
@@ -91,9 +92,7 @@ function sendTimer() {
 
   const webSwitch = document.getElementById("relayToggle");
 
-  // ✅ RULE 2: TIMER START
-  // If switch is OFF → turn ON
-  if (!webSwitch.checked) {
-    webSwitch.checked = true;
-  }
+  // ✅ TIMER START LOGIC
+  // Timer start → switch ON → relay OFF
+  webSwitch.checked = true;
 }
