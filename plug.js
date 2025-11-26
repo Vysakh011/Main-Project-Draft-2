@@ -44,9 +44,11 @@ function updateUI(voltage, current, relayState, timerSec) {
 
   // ✅ TIMER END LOGIC
   if (timerSec === 0) {
-    // Both cases end with OFF
     webSwitch.checked = false;
   }
+
+  // ✅ Update status text
+  document.getElementById("relayStatus").innerText = "Status: " + (webSwitch.checked ? "ON" : "OFF");
 }
 
 // ================= SEND COMMANDS =================
@@ -62,6 +64,9 @@ function toggleRelay() {
   });
   client.publish("smart/plug/cmd", payload);
   console.log("Sent:", payload);
+
+  // ✅ Update status text
+  document.getElementById("relayStatus").innerText = "Status: " + (isChecked ? "ON" : "OFF");
 }
 
 function sendTimer() {
@@ -87,4 +92,7 @@ function sendTimer() {
   });
   client.publish("smart/plug/cmd", payload);
   console.log("Sent:", payload);
+
+  // ✅ Update status text
+  document.getElementById("relayStatus").innerText = "Status: ON";
 }
