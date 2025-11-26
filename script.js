@@ -1,81 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plug Control</title>
-  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <style>
-    .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #ccc; transition: .4s; border-radius: 34px; }
-    .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px;
-      background-color: white; transition: .4s; border-radius: 50%; }
-    input:checked + .slider { background-color: #4CAF50; }
-    input:checked + .slider:before { transform: translateX(26px); }
-  </style>
-</head>
-<body>
-  <header>
-    <h1><i class="bi bi-plug-fill"></i> Plug Control Panel</h1>
-    <p class="subtitle">Live monitoring & control</p>
-  </header>
-  <main>
-    <!-- Plug selector (used if no ?id= provided) -->
-    <div style="text-align:center; margin-top:10px;">
-      <label for="plugSelect" style="font-weight:600; margin-right:8px;">Select Plug</label>
-      <select id="plugSelect" style="padding:8px; border-radius:8px; border:2px solid #0077cc;"></select>
-    </div>
+const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
+const cards = {};       // plugId -> DOM element
+const latest = {};      // plugId -> {voltage, current, relay, timer}
 
-    <section id="plugData" class="plug-container"></section>
+client.on("connect", () => {
+  console.log("MQTT connected");
+  client.subscribe("smart/plug/data");
+});
 
-    <div style="text-align:center; margin-top:20px;">
-      <h3>Relay Control</h3>
-      <label class="switch">
-        <input type="checkbox" id="relayToggle" onchange="toggleRelay()">
-        <span class="slider"></span>
-      </label>
-      <p id="relayStatus" style="margin-top:10px; font-weight:600;">Status: OFF</p>
-      
-      <h3 style="margin-top:30px;">Set Timer</h3>
-      <div class="timer-picker">
-        <div>
-          <select id="hours"></select>
-          <label>Hours</label>
-        </div>
-        <div>
-          <select id="minutes"></select>
-          <label>Minutes</label>
-        </div>
-        <div>
-          <select id="seconds"></select>
-          <label>Seconds</label>
-        </div>
-      </div>
-      <button class="action-btn" onclick="sendTimer()">Start Timer</button>
-      <p id="timerDisplay" style="margin-top:15px; font-size:18px; color:#f39c12;"></p>
-    </div>
-  </main>
+client.on("message", (topic, message) => {
+  let data;
+  try { data = JSON.parse(message.toString()); } catch (e) { return; }
 
-  <script>
-    function fillSelect(id, max) {
-      const sel = document.getElementById(id);
-      for (let i = 0; i < max; i++) {
-        const opt = document.createElement("option");
-        opt.text = String(i).padStart(2, '0');
-        opt.value = i;
-        sel.add(opt);
-      }
-    }
-    fillSelect("hours", 24);
-    fillSelect("minutes", 60);
-    fillSelect("seconds", 60);
-  </script>
+  const id = data.plug;
+  latest[id] = {
+    voltage: Number(data.voltage) || 0,
+    current: Number(data.current) || 0,
+    relay: Number(data.relay) || 0,
+    timer: Number(data.timer) || 0
+  };
 
-  <script src="plug.js"></script>
-</body>
-</html>
+  // Create card if not exists
+  if (!cards[id]) {
+    const card = document.createElement("div");
+    card.className = "plug-card";
+    card.id = "plug-" + id;
+
+    // Add a control button that links to plug.html?id=<id>
+    const controlBtn = document.createElement("a");
+    controlBtn.href = `plug.html?id=${id}`;
+    controlBtn.textContent = "Control";
+    controlBtn.className = "action-btn";
+    controlBtn.style.display = "inline-block";
+    controlBtn.style.marginTop = "12px";
+
+    card.appendChild(controlBtn);
+    document.getElementById("plugs").appendChild(card);
+    cards[id] = card;
+  }
+
+  // Update card content (keep control button at bottom)
+  const v = latest[id].voltage;
+  const a = latest[id].current;
+  const p = v * a;
+
+  cards[id].innerHTML = `
+    <h2>Plug ${id}</h2>
+    <p class="value"><i class="bi bi-battery"></i> Voltage: ${v.toFixed(1)} V</p>
+    <p class="value"><i class="bi bi-lightning"></i> Current: ${a.toFixed(3)} A</p>
+    <p class="value"><i class="bi bi-graph-up"></i> Power: ${p.toFixed(1)} W</p>
+    <p class="value"><i class="bi bi-power"></i> Relay: ${latest[id].relay === 1 ? "ON" : "OFF"}</p>
+    <p class="value"><i class="bi bi-clock"></i> Timer: ${latest[id].timer} sec</p>
+    <a href="plug.html?id=${id}" class="action-btn" style="display:inline-block; margin-top:12px;">Control</a>
+  `;
+
+  // Update total power
+  let total = 0;
+  Object.values(latest).forEach(d => total += (d.voltage * d.current));
+  document.getElementById("total").innerHTML =
+    `<i class="bi bi-graph-up-arrow"></i> Total Power: ${total.toFixed(1)} W`;
+});
