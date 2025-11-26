@@ -10,13 +10,20 @@ client.on("message", (topic, message) => {
   const msg = message.toString();
   console.log("MQTT DATA:", msg);
 
-  // Example payload: plug:1 voltage:230.0V current:0.123A relay:1 timer:25
-  const parts = msg.split(" ");
-  const plugId = parseInt(parts[0].split(":")[1]);
-  const voltage = parseFloat(parts[1].split(":")[1]);
-  const current = parseFloat(parts[2].split(":")[1]);
-  const relay = parseInt(parts[3].split(":")[1]);
-  const timer = parseInt(parts[4].split(":")[1]);
+  // ✅ Parse JSON payload from hub
+  let data;
+  try {
+    data = JSON.parse(msg);
+  } catch (e) {
+    console.error("Invalid JSON:", msg);
+    return;
+  }
+
+  const plugId = data.plug;
+  const voltage = data.voltage;
+  const current = data.current;
+  const relay = data.relay;
+  const timer = data.timer;
 
   // Update live card
   const container = document.getElementById("plugData");
@@ -73,6 +80,7 @@ function sendTimer() {
   if (totalSec > 0) {
     client.publish("smart/plug/cmd", JSON.stringify({ plug: 1, cmd: "timer", seconds: totalSec }));
     document.getElementById("timerDisplay").textContent = `Timer Started: ${totalSec} sec`;
+
     // ✅ Force toggle ON when timer starts
     const toggle = document.getElementById("relayToggle");
     toggle.checked = true;
