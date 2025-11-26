@@ -1,61 +1,70 @@
-const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
-const cards = {};       // plugId -> DOM element
-const latest = {};      // plugId -> {voltage, current, relay, timer}
+// MQTT setup for browser (HiveMQ Public Broker)
+const broker = 'wss://broker.hivemq.com:8884/mqtt';
+const client = mqtt.connect(broker);
 
-client.on("connect", () => {
-  console.log("MQTT connected");
-  client.subscribe("smart/plug/data");
+// Your topic must match the ESP32 publish topic
+const topics = ['smart/plug/data'];
+const plugs = {};
+
+client.on('connect', () => {
+  console.log('✅ Connected to HiveMQ broker');
+  topics.forEach(t => {
+    client.subscribe(t, (err) => {
+      if (!err) console.log(`📡 Subscribed to topic: ${t}`);
+      else console.error('❌ Subscription error:', err);
+    });
+  });
 });
 
-client.on("message", (topic, message) => {
-  let data;
-  try { data = JSON.parse(message.toString()); } catch (e) { return; }
+client.on('message', (topic, message) => {
+  try {
+    const text = message.toString();
+    console.log(`📨 Message received on ${topic}:`, text);
 
-  const id = data.plug;
-  latest[id] = {
-    voltage: Number(data.voltage) || 0,
-    current: Number(data.current) || 0,
-    relay: Number(data.relay) || 0,
-    timer: Number(data.timer) || 0
-  };
+    // Expected format:
+    // plug:1 voltage:234V current:0.05A
+    const regex = /plug:(\d+)\s+voltage:(\d+(?:\.\d+)?)V\s+current:(\d+(?:\.\d+)?)A/;
+    const match = text.match(regex);
 
-  // Create card if not exists
-  if (!cards[id]) {
-    const card = document.createElement("div");
-    card.className = "plug-card";
-    card.id = "plug-" + id;
+    if (match) {
+      const id = `Plug-${match[1]}`;
+      const voltage = parseFloat(match[2]);
+      const current = parseFloat(match[3]);
+      const power = voltage * current;
 
-    // Add a control button that links to plug.html?id=<id>
-    const controlBtn = document.createElement("a");
-    controlBtn.href = `plug.html?id=${id}`;
-    controlBtn.textContent = "Control";
-    controlBtn.className = "action-btn";
-    controlBtn.style.display = "inline-block";
-    controlBtn.style.marginTop = "12px";
+      plugs[id] = { id, voltage, current, power, plugNum: match[1] };
+      updateUI();
+    } else {
+      console.warn('⚠️ Unrecognized message format:', text);
+    }
+  } catch (err) {
+    console.error('⚠️ Parse or process error:', err);
+    console.error('Raw message:', message.toString());
+  }
+});
 
-    card.appendChild(controlBtn);
-    document.getElementById("plugs").appendChild(card);
-    cards[id] = card;
+function updateUI() {
+  const container = document.getElementById('plugs');
+  container.innerHTML = '';
+
+  let total = 0;
+
+  for (const id in plugs) {
+    const p = plugs[id];
+    total += p.power;
+
+    const card = `
+      <div class="plug-card" onclick="location.href='plug.html?plug=${p.plugNum}'">
+        <h2><i class="bi bi-plug-fill"></i> ${p.id}</h2>
+        <div class="value"><i class="bi bi-lightning-charge"></i> Voltage: ${p.voltage.toFixed(2)} V</div>
+        <div class="value"><i class="bi bi-current"></i> Current: ${p.current.toFixed(3)} A</div>
+        <div class="value"><i class="bi bi-bar-chart-line"></i> <b>Power: ${p.power.toFixed(2)} W</b></div>
+      </div>
+    `;
+
+    container.innerHTML += card;
   }
 
-  // Update card content (keep control button at bottom)
-  const v = latest[id].voltage;
-  const a = latest[id].current;
-  const p = v * a;
-
-  cards[id].innerHTML = `
-    <h2>Plug ${id}</h2>
-    <p class="value"><i class="bi bi-battery"></i> Voltage: ${v.toFixed(1)} V</p>
-    <p class="value"><i class="bi bi-lightning"></i> Current: ${a.toFixed(3)} A</p>
-    <p class="value"><i class="bi bi-graph-up"></i> Power: ${p.toFixed(1)} W</p>
-    <p class="value"><i class="bi bi-power"></i> Relay: ${latest[id].relay === 1 ? "ON" : "OFF"}</p>
-    <p class="value"><i class="bi bi-clock"></i> Timer: ${latest[id].timer} sec</p>
-    <a href="plug.html?id=${id}" class="action-btn" style="display:inline-block; margin-top:12px;">Control</a>
-  `;
-
-  // Update total power
-  let total = 0;
-  Object.values(latest).forEach(d => total += (d.voltage * d.current));
-  document.getElementById("total").innerHTML =
-    `<i class="bi bi-graph-up-arrow"></i> Total Power: ${total.toFixed(1)} W`;
-});
+  document.getElementById('total').innerHTML =
+    `<i class="bi bi-graph-up-arrow"></i> Total Power: ${total.toFixed(2)} W`;
+}
