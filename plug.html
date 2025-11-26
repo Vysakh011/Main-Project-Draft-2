@@ -33,33 +33,15 @@
       <h3 style="margin-top:30px;">Set Timer</h3>
       <div class="timer-picker">
         <div>
-          <select id="hours">
-            <script>
-              for (let i = 0; i < 24; i++) {
-                document.write`<option>${String(i).padStart(2, '0')}</option>`);
-              }
-            </script>
-          </select>
+          <select id="hours"></select>
           <label>Hours</label>
         </div>
         <div>
-          <select id="minutes">
-            <script>
-              for (let i = 0; i < 60; i++) {
-                document.write`<option>${String(i).padStart(2, '0')}</option>`);
-              }
-            </script>
-          </select>
+          <select id="minutes"></select>
           <label>Minutes</label>
         </div>
         <div>
-          <select id="seconds">
-            <script>
-              for (let i = 0; i < 60; i++) {
-                document.write`<option>${String(i).padStart(2, '0')}</option>`);
-              }
-            </script>
-          </select>
+          <select id="seconds"></select>
           <label>Seconds</label>
         </div>
       </div>
@@ -67,6 +49,23 @@
       <p id="timerDisplay" style="margin-top:15px; font-size:18px; color:#f39c12;"></p>
     </div>
   </main>
+
+  <!-- Fill dropdowns dynamically -->
+  <script>
+    function fillSelect(id, max) {
+      const sel = document.getElementById(id);
+      for (let i = 0; i < max; i++) {
+        const opt = document.createElement("option");
+        opt.text = String(i).padStart(2, '0');
+        opt.value = i;
+        sel.add(opt);
+      }
+    }
+    fillSelect("hours", 24);
+    fillSelect("minutes", 60);
+    fillSelect("seconds", 60);
+  </script>
+
   <script src="plug.js"></script>
 </body>
 </html>
