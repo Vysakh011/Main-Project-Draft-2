@@ -45,9 +45,16 @@ function updateUI(voltage, current, relayState, timerSec) {
 
   const webSwitch = document.getElementById("relayToggle");
 
-  // ✅ ONLY turn switch OFF when timer ends AND relay is OFF
+  // ✅ INVERSION LOGIC (always active)
+  // relay OFF → switch ON
+  // relay ON  → switch OFF
+  const invertedState = relayState === 0;
+  webSwitch.checked = invertedState;
+
+  // ✅ TIMER END LOGIC
+  // When timer hits 0 AND relay is OFF → switch must be ON
   if (timerSec === 0 && relayState === 0) {
-    webSwitch.checked = false;
+    webSwitch.checked = true;
   }
 }
 
@@ -55,9 +62,10 @@ function updateUI(voltage, current, relayState, timerSec) {
 function toggleRelay() {
   const isChecked = document.getElementById("relayToggle").checked;
 
-  // ✅ Web ON → relay ON
-  // ✅ Web OFF → relay OFF
-  const cmd = isChecked ? "on" : "off";
+  // ✅ UI inversion:
+  // Web ON  → relay OFF
+  // Web OFF → relay ON
+  const cmd = isChecked ? "off" : "on";
 
   const payload = JSON.stringify({
     plug: currentPlugId,
@@ -88,10 +96,9 @@ function sendTimer() {
 
   const webSwitch = document.getElementById("relayToggle");
 
-  // ✅ If switch is OFF → turn ON when timer starts
+  // ✅ TIMER START LOGIC
+  // If switch is OFF → turn ON
   if (!webSwitch.checked) {
     webSwitch.checked = true;
   }
-
-  // ✅ If switch is already ON → leave it ON
 }
