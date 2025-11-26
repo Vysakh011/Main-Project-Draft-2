@@ -94,6 +94,6 @@ function sendTimer() {
   console.log("Sent:", payload);
 
   // ✅ NEW: When timer starts, web switch must turn ON
-  document.getElementById("relayToggle").checked = true;
+  document.getElementById("relayToggle").checked = false;
 }
 
